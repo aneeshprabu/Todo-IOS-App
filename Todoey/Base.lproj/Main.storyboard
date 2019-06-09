@@ -32,7 +32,14 @@
                             <outlet property="delegate" destination="eqz-54-y87" id="gs1-FR-7BO"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Todoey" id="RYH-Ch-1yW"/>
+                    <navigationItem key="navigationItem" title="Todoey" id="RYH-Ch-1yW">
+                        <barButtonItem key="rightBarButtonItem" style="plain" systemItem="add" id="BOC-zI-iIH">
+                            <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <connections>
+                                <action selector="addButtonPressed:" destination="eqz-54-y87" id="HpB-2Q-Oea"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Wxi-vZ-1Ed" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -46,7 +53,7 @@
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="nXP-nl-eZ3">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="barTintColor" red="0.033594313231531975" green="0.55911601023190549" blue="0.73821516433343071" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="barTintColor" red="0.36745047470322795" green="0.79080867077068284" blue="0.92790291878172593" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <textAttributes key="titleTextAttributes">
                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         </textAttributes>

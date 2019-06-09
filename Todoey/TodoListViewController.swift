@@ -10,7 +10,7 @@ import UIKit
 
 class TodoListViewController: UITableViewController {
     
-    let itemArray = ["Buy Eggos", "Make Omletto", "Buy more Eggos"]
+    var itemArray = ["Buy Eggos", "Make Omletto", "Buy more Eggos"]
 
     override func viewDidLoad() {
         
@@ -52,7 +52,47 @@ class TodoListViewController: UITableViewController {
         
     }
     
-
+    //MARK - Add new items
+    
+    @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
+        
+        var textField = UITextField()
+        
+        
+        let alert = UIAlertController(title: "Add new Todoey Item", message: "", preferredStyle: .alert)
+        
+        //Changing title color of alert box :
+        let attributedString = NSAttributedString(string: "Title", attributes: [ NSAttributedString.Key.foregroundColor : UIColor.white])
+        alert.setValue(attributedString, forKey: "attributedTitle")
+        
+        // Accessing alert view backgroundColor :
+        alert.view.subviews.first?.subviews.first?.subviews.first?.backgroundColor = UIColor.darkGray
+        
+        // Accessing buttons tintcolor :
+        alert.view.tintColor = UIColor.white
+        
+        
+        
+        let action = UIAlertAction(title: "Add Item", style: .default) {
+            (action) in
+            //What will happen once the user clicks the add item button on our UIAlert
+            self.itemArray.append(textField.text!)
+            self.tableView.reloadData()
+        }
+        
+        alert.addTextField {
+            (alertTextField) in
+            alertTextField.keyboardAppearance = .dark
+            alertTextField.placeholder = "Create new item"
+            textField = alertTextField
+        }
+        
+        alert.addAction(action)
+        
+        present(alert, animated: true, completion:  nil)
+        
+    }
+    
 
 }
 
