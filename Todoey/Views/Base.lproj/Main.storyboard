@@ -36,7 +36,7 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="Items" id="RYH-Ch-1yW">
-                        <barButtonItem key="rightBarButtonItem" style="plain" systemItem="add" id="BOC-zI-iIH">
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="BOC-zI-iIH">
                             <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <connections>
                                 <action selector="addButtonPressed:" destination="eqz-54-y87" id="HpB-2Q-Oea"/>
