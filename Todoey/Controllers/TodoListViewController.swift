@@ -7,23 +7,35 @@
 //
 
 import UIKit
+import CoreData
 
 class TodoListViewController: UITableViewController {
     
-    //MARK - Initialize variables here
+    //MARK: - Initialize variables here
     var itemArray = [Item] ()
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    var selectedCategory : Category? {
+        didSet {
+            loadItems()
+        }
+    }
+    
+    @IBOutlet weak var searchBar: UISearchBar!
+    
+//Singleton class which we use from the AppDelegate to get the context of the table
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    
     //let defaults = UserDefaults.standard
     
     
-    //MARK - ViewDidLoad Method
+    //MARK: - ViewDidLoad Method
     override func viewDidLoad() {
         
         super.viewDidLoad()
         
+//        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
-        print(dataFilePath!)
-        loadItems()
+        searchBar.delegate = self
+        
         
         // Do any additional setup after loading the view.
 //        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
@@ -33,7 +45,7 @@ class TodoListViewController: UITableViewController {
 //        }
     }
     
-    //MARK - Tableview Datasource Method
+    //MARK: - Tableview Datasource Method
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
@@ -49,7 +61,7 @@ class TodoListViewController: UITableViewController {
     }
     
     
-    //MARK - Tableview number of Rows method
+    //MARK: - Tableview number of Rows method
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
@@ -58,7 +70,7 @@ class TodoListViewController: UITableViewController {
     }
     
     
-    //MARK - TableView Delegate Methods (ie) What happens when we select a row
+    //MARK: - TableView Delegate Methods (ie) What happens when we select a row
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
@@ -70,7 +82,7 @@ class TodoListViewController: UITableViewController {
         
     }
     
-    //MARK - Add new items (ie) That plus button +
+    //MARK: - Add new items (ie) That plus button +
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
@@ -79,20 +91,22 @@ class TodoListViewController: UITableViewController {
         
         let alert = UIAlertController(title: "Add new Todoey Item", message: "", preferredStyle: .alert)
         
-                    //Changing title color of alert box :
-                    let attributedString = NSAttributedString(string: "Title", attributes: [ NSAttributedString.Key.foregroundColor : UIColor.white])
-                    alert.setValue(attributedString, forKey: "attributedTitle")
-                    // Accessing alert view backgroundColor :
-                    alert.view.subviews.first?.subviews.first?.subviews.first?.backgroundColor = UIColor.darkGray
-                    // Accessing buttons tintcolor :
-                    alert.view.tintColor = UIColor.white
+//                    //Changing title color of alert box :
+//                    let attributedString = NSAttributedString(string: "Title", attributes: [ NSAttributedString.Key.foregroundColor : UIColor.white])
+//                    alert.setValue(attributedString, forKey: "attributedTitle")
+//                    // Accessing alert view backgroundColor :
+//                    alert.view.subviews.first?.subviews.first?.subviews.first?.backgroundColor = UIColor.darkGray
+//                    // Accessing buttons tintcolor :
+//                    alert.view.tintColor = UIColor.white
         
         let action = UIAlertAction(title: "Add Item", style: .default) {
             (action) in
             
             //What will happen once the user clicks the add item button on our UIAlert
-            let newItem = Item()
+            let newItem = Item(context: self.context)
             newItem.title = textField.text!
+            newItem.done = false
+            newItem.parentCategory = self.selectedCategory
             
             self.itemArray.append(newItem)
             
@@ -116,33 +130,65 @@ class TodoListViewController: UITableViewController {
     
     
     func saveItems() {
-        let encoder = PropertyListEncoder()
         
         do {
-            let data = try encoder.encode(itemArray)
-            try data.write(to: dataFilePath!)
+            try context.save()
         }
         catch {
-            print("Error encoding item array")
+            print("Error in saving context")
+            print(error)
         }
-        
         
         self.tableView.reloadData()
     }
     
-    func loadItems() {
+    func loadItems( with request : NSFetchRequest<Item> = Item.fetchRequest(), predicate : NSPredicate? = nil) {
         
-        if let data = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
-            do {
-            itemArray = try decoder.decode([Item].self, from: data)
-            }
-            catch {
-                print("Error decoding item array : \(error)")
+        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+        
+        if let additionalPredicate = predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate])
+        }
+        else {
+            request.predicate = categoryPredicate
+        }
+                
+        do {
+            itemArray =  try context.fetch(request)
+        }
+        catch {
+            print("Problem loading the data : \(error)")
+        }
+        tableView.reloadData()
+    }
+}
+
+//MARK: - Search bar methods
+
+
+extension TodoListViewController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        request.predicate = predicate
+        
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        
+        loadItems(with: request, predicate: predicate)
+    }
+    
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text!.isEmpty {
+            loadItems()
+            
+            //Here we ask the main thread to use a async method which releaves us from being the first responder when cancel button is clicked on the search bar
+            
+            DispatchQueue.main.async { //Thread manager (Assume the person who distributes our tasks to various threads based on priority)
+                searchBar.resignFirstResponder() //dismiss keyboard (no longer have the cursor and keyboard)
             }
         }
     }
-    
-
 }
 
